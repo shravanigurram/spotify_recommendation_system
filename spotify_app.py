@@ -65,6 +65,22 @@ def recommend_by_genre(genre_name, data, model, n_recommendations=5):
     ]
     return recommendations[:n_recommendations]
 
+# Function to recommend tracks by genre and artist
+def recommend_tracks_by_genre_and_artist(genre_name, artist_name, data, model, features, n_recommendations=20):
+    filtered_tracks = data[(data['artist'] == artist_name) & (data['genre'] == genre_name)]
+    if filtered_tracks.empty:
+        st.warning(f"No tracks found for artist: '{artist_name}' and genre: '{genre_name}'")
+        return pd.DataFrame()
+
+    representative_track = filtered_tracks.iloc[0]
+    track_features = representative_track[features].values.reshape(1, -1)
+    track_features_scaled = scaler.transform(track_features)
+
+    distances, indices = model.kneighbors(track_features_scaled, n_neighbors=n_recommendations)
+    recommended_tracks = data.iloc[indices[0][1:]]
+    recommended_tracks['distance'] = distances[0][1:]
+    return recommended_tracks[['track_name', 'artist', 'genre', 'distance']]
+
 # Spotify-themed Streamlit App
 st.set_page_config(page_title="Spotify Music Recommender", page_icon="🎧", layout="wide")
 
@@ -91,7 +107,7 @@ st.markdown(
 )
 
 # Tab structure for different functionalities
-tab1, tab2, tab3 = st.tabs(["Track-based", "Artist-based", "Genre-based"])
+tab1, tab2, tab3, tab4 = st.tabs(["Track-based", "Artist-based", "Genre-based", "Genre & Artist-based"])
 
 # Track-based Recommendations
 with tab1:
@@ -134,3 +150,18 @@ with tab3:
                 st.warning(f"🚫 Genre '{genre_name}' not found in the dataset.")
         else:
             st.warning("⚠️ Please enter a genre.")
+
+# Genre & Artist-based Recommendations
+with tab4:
+    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_artist_input")
+    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17", key="artist_genre_input")
+    num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_artist_slider")
+    if st.button("Get Recommendations based on Genre & Artist 🎶"):
+        if genre_name and artist_name:
+            recommendations = recommend_tracks_by_genre_and_artist(genre_name, artist_name, spotify_data, knn_model, feature_columns, num_recommendations)
+            if not recommendations.empty:
+                st.dataframe(recommendations)
+            else:
+                st.warning(f"🚫 No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
+        else:
+            st.warning("⚠️ Please enter both genre and artist.")

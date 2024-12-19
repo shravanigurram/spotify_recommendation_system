@@ -165,6 +165,7 @@ with tab4:
                 st.warning(f"🚫 No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
         else:
             st.warning("⚠️ Please enter both genre and artist.")
+'''            
 # Recommendation function based on genre and artist
 def recommend_tracks_by_genre_and_artist(genre_name, artist_name, spotify_data, model, features, n_recommendations=20):
     # Filter tracks by the given genre and artist
@@ -221,3 +222,4 @@ if st.button("Get Recommendations based on Genre & Artist 🎶"):
             st.warning(f"No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
     else:
         st.warning("⚠️ Please enter both genre and artist.")
+'''

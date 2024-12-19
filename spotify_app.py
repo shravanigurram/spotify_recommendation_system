@@ -65,21 +65,26 @@ def recommend_by_genre(genre_name, data, model, n_recommendations=5):
     ]
     return recommendations[:n_recommendations]
 
-# Function to recommend tracks by genre and artist
-def recommend_tracks_by_genre_and_artist(genre_name, artist_name, data, model, features, n_recommendations=20):
-    filtered_tracks = data[(data['artist'] == artist_name) & (data['genre'] == genre_name)]
-    if filtered_tracks.empty:
-        st.warning(f"No tracks found for artist: '{artist_name}' and genre: '{genre_name}'")
-        return pd.DataFrame()
+# Function to recommend tracks based on both genre and artist
+def recommend_by_genre_and_artist(genre_name, artist_name, data, model, data_scaled, n_recommendations=5):
+    # Filter tracks by genre and artist
+    genre_artist_tracks_idx = data.index[
+        (data['genre'].str.lower() == genre_name.lower()) & (data['artist_name'].str.lower() == artist_name.lower())
+    ].tolist()
+    
+    if not genre_artist_tracks_idx:
+        return []
 
-    representative_track = filtered_tracks.iloc[0]
-    track_features = representative_track[features].values.reshape(1, -1)
-    track_features_scaled = scaler.transform(track_features)
-
-    distances, indices = model.kneighbors(track_features_scaled, n_neighbors=n_recommendations)
-    recommended_tracks = data.iloc[indices[0][1:]]
-    recommended_tracks['distance'] = distances[0][1:]
-    return recommended_tracks[['track_name', 'artist', 'genre', 'distance']]
+    track_idx = genre_artist_tracks_idx[0]
+    distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)  
+    
+    # Create recommendations list excluding the input track
+    recommendations = [
+        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
+        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
+    ]
+    
+    return recommendations[:n_recommendations]
 
 # Spotify-themed Streamlit App
 st.set_page_config(page_title="Spotify Music Recommender", page_icon="🎧", layout="wide")
@@ -150,19 +155,34 @@ with tab3:
                 st.warning(f"🚫 Genre '{genre_name}' not found in the dataset.")
         else:
             st.warning("⚠️ Please enter a genre.")
+# artist & genre based Recommendations
+st.title("🎶 Track Recommendations based on Genre & Artist")
 
-# Genre & Artist-based Recommendations
-with tab4:
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_artist_input")
-    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17", key="artist_genre_input")
-    num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_artist_slider")
-    if st.button("Get Recommendations based on Genre & Artist 🎶"):
-        if genre_name and artist_name:
-            recommendations = recommend_tracks_by_genre_and_artist(genre_name, artist_name, spotify_data, knn_model, feature_columns, num_recommendations)
-            if not recommendations.empty:
-                st.dataframe(recommendations)
-            else:
-                st.warning(f"🚫 No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
+# Input fields for genre and artist
+with st.expander("Enter Genre and Artist Information"):
+    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
+    artist_name = st.text_input("🎤 Enter an Artist", placeholder="e.g., Artist_1")
+
+# Slider to select the number of recommendations
+num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_artist_slider")
+
+# Button to trigger the recommendation process
+if st.button("Get Recommendations based on Genre & Artist 🎶"):
+    if genre_name and artist_name:
+        # Call the function to get combined recommendations
+        recommendations = recommend_by_genre_and_artist(genre_name, artist_name, spotify_data, knn_model, data_scaled, num_recommendations)
+        
+        # Display recommendations
+        if recommendations:
+            st.write(f"**Recommended Tracks for Genre '{genre_name}' and Artist '{artist_name}':**")
+            for rec in recommendations:
+                st.write(f"- **{rec['track_name']}** (Distance: {rec['distance']:.2f})")
         else:
-            st.warning("⚠️ Please enter both genre and artist.")
+            st.warning(f"🚫 No tracks found for genre '{genre_name}' and artist '{artist_name}' in the dataset.")
+    else:
+        st.warning("⚠️ Please enter both a genre and an artist.")
+
+
+
+
 

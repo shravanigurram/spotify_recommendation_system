@@ -212,3 +212,4 @@ with tab4:
                 st.warning(f"🚫 No tracks found for artist '{artist_name}' in genre '{genre_name}'.")
         else:
             st.warning("⚠️ Please enter both artist name and genre.")
+

@@ -1,4 +1,4 @@
-'''import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
@@ -165,28 +165,6 @@ with tab4:
                 st.warning(f"🚫 No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
         else:
             st.warning("⚠️ Please enter both genre and artist.")
-'''
-import streamlit as st
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
-
-# Load data and model (replace these with actual file paths)
-DATA_PATH = 'spotify_dataset.csv'
-MODEL_PATH = 'knn.pkl'
-spotify_data = pd.read_csv(DATA_PATH)
-
-with open(MODEL_PATH, 'rb') as file:
-    knn_model = pickle.load(file)
-
-# Define features and scaler
-feature_columns = ["danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"]
-scaler = StandardScaler()
-data_scaled = scaler.fit_transform(spotify_data[feature_columns])
-
 # Recommendation function based on genre and artist
 def recommend_tracks_by_genre_and_artist(genre_name, artist_name, spotify_data, model, features, n_recommendations=20):
     # Filter tracks by the given genre and artist
@@ -243,4 +221,3 @@ if st.button("Get Recommendations based on Genre & Artist 🎶"):
             st.warning(f"No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
     else:
         st.warning("⚠️ Please enter both genre and artist.")
-

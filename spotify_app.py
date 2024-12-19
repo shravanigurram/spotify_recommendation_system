@@ -24,7 +24,6 @@ def display_recommendations(title, recommendations):
         st.write(f"{idx}. 🎵 {rec['track_name']}")
 
 # Function to find similar tracks based on KNN
-# Function to find similar tracks based on KNN
 def find_similar_tracks(track_name, data, model, n_recommendations=5):
     try:
         track_idx = data.index[data["track_name"].str.lower() == track_name.lower()][0]
@@ -32,14 +31,11 @@ def find_similar_tracks(track_name, data, model, n_recommendations=5):
         return []
 
     distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)
-    recommendations = []
-    for idx, distance in zip(indices.flatten(), distances.flatten()):
-        if idx != track_idx:
-            recommendations.append({
-                'track_name': data.iloc[idx]['track_name'],
-                'distance': distance
-            })
-    return recommendations[:n_recommendations]  # Return exactly n_recommendations
+    recommendations = [
+        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
+        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
+    ]
+    return recommendations[:n_recommendations]
 
 # Function to find recommendations by artist
 def recommend_by_artist(artist_name, data, model, n_recommendations=5):
@@ -49,14 +45,11 @@ def recommend_by_artist(artist_name, data, model, n_recommendations=5):
 
     track_idx = artist_tracks_idx[0]
     distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)
-    recommendations = []
-    for idx, distance in zip(indices.flatten(), distances.flatten()):
-        if idx != track_idx:
-            recommendations.append({
-                'track_name': data.iloc[idx]['track_name'],
-                'distance': distance
-            })
-    return recommendations[:n_recommendations]  # Return exactly n_recommendations
+    recommendations = [
+        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
+        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
+    ]
+    return recommendations[:n_recommendations]
 
 # Function to find recommendations by genre
 def recommend_by_genre(genre_name, data, model, n_recommendations=5):
@@ -66,23 +59,22 @@ def recommend_by_genre(genre_name, data, model, n_recommendations=5):
 
     track_idx = genre_tracks_idx[0]
     distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)
-    recommendations = []
-    for idx, distance in zip(indices.flatten(), distances.flatten()):
-        if idx != track_idx:
-            recommendations.append({
-                'track_name': data.iloc[idx]['track_name'],
-                'distance': distance
-            })
-    return recommendations[:n_recommendations]  # Return exactly n_recommendations
-
+    recommendations = [
+        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
+        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
+    ]
+    return recommendations[:n_recommendations]
 
 # Spotify-themed Streamlit App
-st.title("🎵 Spotify Recommendation System")
+st.set_page_config(page_title="Spotify Music Recommender", page_icon="🎧", layout="wide")
+
+st.title("🎵 Spotify Music Recommendation System")
 st.markdown(
     """
     <style>
     body, .stApp {
-        font-family: Arial, sans-serif;
+        font-family: 'Trebuchet MS', sans-serif;
+        background-color: #f7f7f7;
     }
     h1, h2, h3, h4, h5, h6 {
         color: #1DB954;
@@ -90,7 +82,7 @@ st.markdown(
     .stButton>button {
         background-color: #1DB954;
         color: white;
-        border-radius: 10px;
+        border-radius: 5px;
         font-size: 16px;
     }
     </style>
@@ -105,7 +97,7 @@ tab1, tab2, tab3 = st.tabs(["Track-based", "Artist-based", "Genre-based"])
 with tab1:
     track_name = st.text_input("🎧 Enter a Track Name", placeholder="e.g., Track_1")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5)
-    if st.button("Get Recommendations based on track🎶"):
+    if st.button("Get Recommendations based on Track 🎶"):
         if track_name:
             recommendations = find_similar_tracks(track_name, spotify_data, knn_model, num_recommendations)
             if recommendations:
@@ -119,7 +111,7 @@ with tab1:
 with tab2:
     artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="artist_slider")
-    if st.button("Get Recommendations based on Artist🎶"):
+    if st.button("Get Recommendations based on Artist 🎶"):
         if artist_name:
             recommendations = recommend_by_artist(artist_name, spotify_data, knn_model, num_recommendations)
             if recommendations:
@@ -133,7 +125,7 @@ with tab2:
 with tab3:
     genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_slider")
-    if st.button("Get Recommendations based on Genre🎶"):
+    if st.button("Get Recommendations based on Genre 🎶"):
         if genre_name:
             recommendations = recommend_by_genre(genre_name, spotify_data, knn_model, num_recommendations)
             if recommendations:

@@ -9,7 +9,7 @@ from sklearn.neighbors import NearestNeighbors
 with open('knn.pkl', 'rb') as file:
     knn_model = pickle.load(file)
 
-DATA_PATH = 'spotify_synthetic_data.csv'
+DATA_PATH = 'spotify_dataset.csv'
 spotify_data = pd.read_csv(DATA_PATH)
 
 # Assuming features and scaler are pre-defined

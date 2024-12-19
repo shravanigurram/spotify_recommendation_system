@@ -1,4 +1,4 @@
-import streamlit as st
+'''import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
@@ -165,3 +165,82 @@ with tab4:
                 st.warning(f"🚫 No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
         else:
             st.warning("⚠️ Please enter both genre and artist.")
+'''
+import streamlit as st
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
+
+# Load data and model (replace these with actual file paths)
+DATA_PATH = 'spotify_dataset.csv'
+MODEL_PATH = 'knn.pkl'
+spotify_data = pd.read_csv(DATA_PATH)
+
+with open(MODEL_PATH, 'rb') as file:
+    knn_model = pickle.load(file)
+
+# Define features and scaler
+feature_columns = ["danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"]
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(spotify_data[feature_columns])
+
+# Recommendation function based on genre and artist
+def recommend_tracks_by_genre_and_artist(genre_name, artist_name, spotify_data, model, features, n_recommendations=20):
+    # Filter tracks by the given genre and artist
+    filtered_tracks = spotify_data[(spotify_data['artist'] == artist_name) & (spotify_data['genre'] == genre_name)]
+
+    if filtered_tracks.empty:
+        st.warning(f"No tracks found for artist: '{artist_name}' and genre: '{genre_name}'")
+        return pd.DataFrame()
+
+    # Select a representative track (first track)
+    representative_track = filtered_tracks.iloc[0]
+    track_features = representative_track[features].values.reshape(1, -1)
+    track_features_scaled = scaler.transform(track_features)
+
+    # Find similar tracks using the k-NN model
+    distances, indices = model.kneighbors(track_features_scaled, n_neighbors=n_recommendations)
+
+    # Gather recommended tracks (excluding the first one, which is the query track itself)
+    recommended_tracks = spotify_data.iloc[indices[0][1:]]
+    recommended_tracks['distance'] = distances[0][1:]
+
+    # Return the recommended tracks with their similarity scores
+    recommendations = recommended_tracks[['track_name', 'artist', 'genre', 'distance']]
+    return recommendations
+
+# Streamlit UI
+st.set_page_config(page_title="Spotify Recommendation", page_icon="🎵")
+
+st.title("🎵 Spotify Music Recommendation System")
+
+# Input fields
+artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17")
+genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
+num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5)
+
+if st.button("Get Recommendations based on Genre & Artist 🎶"):
+    if artist_name and genre_name:
+        recommendations = recommend_tracks_by_genre_and_artist(
+            genre_name, artist_name, spotify_data, knn_model, feature_columns, num_recommendations
+        )
+        if not recommendations.empty:
+            st.dataframe(recommendations)
+
+            # Visualization
+            st.subheader("Similarity Scores Visualization")
+            fig, ax = plt.subplots(figsize=(8, 4))
+            sns.barplot(x='track_name', y='distance', data=recommendations, palette='viridis', ax=ax)
+            ax.set_title(f"Similarity Scores for Tracks by '{artist_name}' in Genre '{genre_name}'")
+            ax.set_ylabel("Distance (lower is better)")
+            ax.set_xlabel("Recommended Tracks")
+            plt.xticks(rotation=45, ha='right')
+            st.pyplot(fig)
+        else:
+            st.warning(f"No tracks found for artist '{artist_name}' and genre '{genre_name}'.")
+    else:
+        st.warning("⚠️ Please enter both genre and artist.")
+

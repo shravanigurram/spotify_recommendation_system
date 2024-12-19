@@ -116,7 +116,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["Track-based", "Artist-based", "Genre-based", 
 
 # Track-based Recommendations
 with tab1:
-    track_name = st.text_input("🎧 Enter a Track Name", placeholder="e.g., Track_1")
+    track_name = st.text_input("🎧 Enter a Track Name", placeholder="e.g., Track_1", key="track_name")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5)
     if st.button("Get Recommendations based on Track 🎶"):
         if track_name:
@@ -130,7 +130,7 @@ with tab1:
 
 # Artist-based Recommendations
 with tab2:
-    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17")
+    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17", key="artist_name")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="artist_slider")
     if st.button("Get Recommendations based on Artist 🎶"):
         if artist_name:
@@ -144,7 +144,7 @@ with tab2:
 
 # Genre-based Recommendations
 with tab3:
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
+    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_name")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_slider")
     if st.button("Get Recommendations based on Genre 🎶"):
         if genre_name:
@@ -161,8 +161,8 @@ with tab4:
     st.title("🎶 Track Recommendations based on Genre & Artist")
 
     # Input fields for genre and artist
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
-    artist_name = st.text_input("🎤 Enter an Artist", placeholder="e.g., Artist_1")
+    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_artist")
+    artist_name = st.text_input("🎤 Enter an Artist", placeholder="e.g., Artist_1", key="artist_genre")
 
     # Slider to select the number of recommendations
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_artist_slider")

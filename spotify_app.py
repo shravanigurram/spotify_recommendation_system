@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler  # Importing MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
 
 # Load KNN model, dataset, and scaler
@@ -14,8 +14,10 @@ spotify_data = pd.read_csv(DATA_PATH)
 
 # Assuming features and scaler are pre-defined
 feature_columns = ["danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"]
-scaler = StandardScaler()
-data_scaled = scaler.fit_transform(spotify_data[feature_columns])
+
+# Use MinMaxScaler instead of StandardScaler
+scaler = MinMaxScaler()  # Initialize MinMaxScaler
+data_scaled = scaler.fit_transform(spotify_data[feature_columns])  # Apply scaling
 
 # Function to format recommendations
 def display_recommendations(title, recommendations):

@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-from sklearn.preprocessing import MinMaxScaler  # Importing MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 
 # Load KNN model, dataset, and scaler
@@ -14,10 +14,8 @@ spotify_data = pd.read_csv(DATA_PATH)
 
 # Assuming features and scaler are pre-defined
 feature_columns = ["danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo"]
-
-# Use MinMaxScaler instead of StandardScaler
-scaler = MinMaxScaler()  # Initialize MinMaxScaler
-data_scaled = scaler.fit_transform(spotify_data[feature_columns])  # Apply scaling
+scaler = StandardScaler()
+data_scaled = scaler.fit_transform(spotify_data[feature_columns])
 
 # Function to format recommendations
 def display_recommendations(title, recommendations):
@@ -67,37 +65,17 @@ def recommend_by_genre(genre_name, data, model, n_recommendations=5):
     ]
     return recommendations[:n_recommendations]
 
-# Function to recommend tracks based on both genre and artist
-def recommend_by_genre_and_artist(genre_name, artist_name, data, model, data_scaled, n_recommendations=5):
-    # Filter tracks by genre and artist
-    genre_artist_tracks_idx = data.index[
-        (data['genre'].str.lower() == genre_name.lower()) & (data['artist_name'].str.lower() == artist_name.lower())
-    ].tolist()
-    
-    if not genre_artist_tracks_idx:
-        return []
-
-    track_idx = genre_artist_tracks_idx[0]
-    distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)  
-    
-    # Create recommendations list excluding the input track
-    recommendations = [
-        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
-        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
-    ]
-    
-    return recommendations[:n_recommendations]
-
-# Spotify-themed Streamlit App
+# Spotify-themed Streamlit App with custom CSS
 st.set_page_config(page_title="Spotify Music Recommender", page_icon="🎧", layout="wide")
 
 st.title("🎵 Spotify Music Recommendation System")
 st.markdown(
     """
     <style>
-    body, .stApp {
-        font-family: 'Trebuchet MS', sans-serif;
-        background-color: #f7f7f7;
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #1C1C1C;
+        color: white;
     }
     h1, h2, h3, h4, h5, h6 {
         color: #1DB954;
@@ -105,8 +83,45 @@ st.markdown(
     .stButton>button {
         background-color: #1DB954;
         color: white;
+        border-radius: 10px;
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #128B31;
+        transform: scale(1.05);
+    }
+    .stTextInput input {
+        background-color: #333333;
+        border: 1px solid #1DB954;
+        color: white;
+    }
+    .stSlider>div>div>input {
+        background-color: #333333;
+        color: white;
+    }
+    .stTextInput input:focus {
+        border-color: #1DB954;
+    }
+    .stTextInput input::placeholder {
+        color: #a0a0a0;
+    }
+    .stWarning {
+        background-color: #FF5722;
+        color: white;
         border-radius: 5px;
-        font-size: 16px;
+    }
+    .stSubheader {
+        color: #1DB954;
+    }
+    .stTab {
+        background-color: #333333;
+        color: white;
+        border-radius: 5px;
+    }
+    .stTab:hover {
+        background-color: #1DB954;
+        color: black;
     }
     </style>
     """,
@@ -114,11 +129,11 @@ st.markdown(
 )
 
 # Tab structure for different functionalities
-tab1, tab2, tab3, tab4 = st.tabs(["Track-based", "Artist-based", "Genre-based", "Genre & Artist-based"])
+tab1, tab2, tab3 = st.tabs(["Track-based", "Artist-based", "Genre-based"])
 
 # Track-based Recommendations
 with tab1:
-    track_name = st.text_input("🎧 Enter a Track Name", placeholder="e.g., Track_1", key="track_name")
+    track_name = st.text_input("🎧 Enter a Track Name", placeholder="e.g., Track_1")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5)
     if st.button("Get Recommendations based on Track 🎶"):
         if track_name:
@@ -132,7 +147,7 @@ with tab1:
 
 # Artist-based Recommendations
 with tab2:
-    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17", key="artist_name")
+    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="artist_slider")
     if st.button("Get Recommendations based on Artist 🎶"):
         if artist_name:
@@ -146,7 +161,7 @@ with tab2:
 
 # Genre-based Recommendations
 with tab3:
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_name")
+    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
     num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_slider")
     if st.button("Get Recommendations based on Genre 🎶"):
         if genre_name:
@@ -157,30 +172,3 @@ with tab3:
                 st.warning(f"🚫 Genre '{genre_name}' not found in the dataset.")
         else:
             st.warning("⚠️ Please enter a genre.")
-
-# Genre & Artist-based Recommendations
-with tab4:
-    st.title("🎶 Track Recommendations based on Genre & Artist")
-
-    # Input fields for genre and artist
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop", key="genre_artist")
-    artist_name = st.text_input("🎤 Enter an Artist", placeholder="e.g., Artist_1", key="artist_genre")
-
-    # Slider to select the number of recommendations
-    num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_artist_slider")
-
-    # Button to trigger the recommendation process
-    if st.button("Get Recommendations based on Genre & Artist 🎶"):
-        if genre_name and artist_name:
-            # Call the function to get combined recommendations
-            recommendations = recommend_by_genre_and_artist(genre_name, artist_name, spotify_data, knn_model, data_scaled, num_recommendations)
-            
-            # Display recommendations
-            if recommendations:
-                st.write(f"**Recommended Tracks for Genre '{genre_name}' and Artist '{artist_name}':**")
-                for rec in recommendations:
-                    st.write(f"- **{rec['track_name']}** (Distance: {rec['distance']:.2f})")
-            else:
-                st.warning(f"🚫 No tracks found for genre '{genre_name}' and artist '{artist_name}' in the dataset.")
-        else:
-            st.warning("⚠️ Please enter both a genre and an artist.")

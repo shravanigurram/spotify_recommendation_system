@@ -1,25 +1,42 @@
-# 📦 Streamlit App Starter Kit 
-```
-⬆️ (Replace above with your app's name)
-```
+# Spotify Music Recommendation System
 
-Description of the app ...
+This is a web application that provides personalized music recommendations based on tracks, artists, or genres. The app uses machine learning (KNN algorithm) to suggest similar songs from the Spotify dataset.
 
-## Demo App
+## Features
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://app-starter-kit.streamlit.app/)
+- **Track-based Recommendations**: Get similar tracks based on a song you enter.
+- **Artist-based Recommendations**: Find songs from a specific artist or similar ones.
+- **Genre-based Recommendations**: Discover songs from a specific genre.
 
-## GitHub Codespaces
+## Technologies Used
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/streamlit/app-starter-kit?quickstart=1)
+- **Streamlit**: Web app framework for the interface.
+- **Scikit-Learn**: Machine learning library for the KNN algorithm.
+- **Pandas & Numpy**: Data handling and processing.
+- **Pickle**: Loading pre-trained model and data.
 
-## Section Heading
+## Getting Started
 
-This is filler text, please replace this with text for this section.
+### Prerequisites
 
-## Further Reading
+Make sure you have Python 3.6+ installed, along with the following libraries:
 
-This is filler text, please replace this with a explanatory text about further relevant resources for this repo
-- Resource 1
-- Resource 2
-- Resource 3
+- `streamlit`
+- `pandas`
+- `numpy`
+- `scikit-learn`
+
+Install them with:
+
+pip install streamlit pandas numpy scikit-learn
+    
+
+Visit the app in your browser at 'https://spotifymusicrecommendation.streamlit.app/'.
+
+## How It Works
+
+- **Track-based Recommendations**: Enter a track name to get similar song suggestions.
+- **Artist-based Recommendations**: Enter an artist's name to get recommendations.
+- **Genre-based Recommendations**: Input a genre, and the app will suggest songs from that genre.
+
+

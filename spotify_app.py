@@ -37,39 +37,10 @@ def find_similar_tracks(track_name, data, model, n_recommendations=5):
     ]
     return recommendations[:n_recommendations]
 
-# Function to find recommendations by artist
-def recommend_by_artist(artist_name, data, model, n_recommendations=5):
-    artist_tracks_idx = data.index[data['artist'].str.lower() == artist_name.lower()].tolist()
-    if not artist_tracks_idx:
-        return []
-
-    track_idx = artist_tracks_idx[0]
-    distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)
-    recommendations = [
-        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
-        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
-    ]
-    return recommendations[:n_recommendations]
-
-# Function to find recommendations by genre
-def recommend_by_genre(genre_name, data, model, n_recommendations=5):
-    genre_tracks_idx = data.index[data['genre'].str.lower() == genre_name.lower()].tolist()
-    if not genre_tracks_idx:
-        return []
-
-    track_idx = genre_tracks_idx[0]
-    distances, indices = model.kneighbors([data_scaled[track_idx]], n_neighbors=n_recommendations + 1)
-    recommendations = [
-        {'track_name': data.iloc[idx]['track_name'], 'distance': distance}
-        for idx, distance in zip(indices.flatten(), distances.flatten()) if idx != track_idx
-    ]
-    return recommendations[:n_recommendations]
-
 # Function to recommend tracks by genre and artist
 def recommend_tracks_by_genre_and_artist(genre_name, artist_name, data, model, features, n_recommendations=20):
-    filtered_tracks = data[(data['artist'] == artist_name) & (data['genre'] == genre_name)]
+    filtered_tracks = data[(data['artist'].str.lower() == artist_name.lower()) & (data['genre'].str.lower() == genre_name.lower())]
     if filtered_tracks.empty:
-        st.warning(f"No tracks found for artist: '{artist_name}' and genre: '{genre_name}'")
         return pd.DataFrame()
 
     representative_track = filtered_tracks.iloc[0]
@@ -122,34 +93,6 @@ with tab1:
                 st.warning("🚫 Track not found in the dataset.")
         else:
             st.warning("⚠️ Please enter a track name.")
-
-# Artist-based Recommendations
-with tab2:
-    artist_name = st.text_input("🎨 Enter an Artist Name", placeholder="e.g., Artist_17")
-    num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="artist_slider")
-    if st.button("Get Recommendations based on Artist 🎶"):
-        if artist_name:
-            recommendations = recommend_by_artist(artist_name, spotify_data, knn_model, num_recommendations)
-            if recommendations:
-                display_recommendations(f"Recommended Tracks for Artist '{artist_name}':", recommendations)
-            else:
-                st.warning(f"🚫 Artist '{artist_name}' not found in the dataset.")
-        else:
-            st.warning("⚠️ Please enter an artist name.")
-
-# Genre-based Recommendations
-with tab3:
-    genre_name = st.text_input("🎭 Enter a Genre", placeholder="e.g., Pop")
-    num_recommendations = st.slider("🔢 Number of Recommendations", 1, 20, 5, key="genre_slider")
-    if st.button("Get Recommendations based on Genre 🎶"):
-        if genre_name:
-            recommendations = recommend_by_genre(genre_name, spotify_data, knn_model, num_recommendations)
-            if recommendations:
-                display_recommendations(f"Recommended Tracks for Genre '{genre_name}':", recommendations)
-            else:
-                st.warning(f"🚫 Genre '{genre_name}' not found in the dataset.")
-        else:
-            st.warning("⚠️ Please enter a genre.")
 
 # Genre & Artist-based Recommendations
 with tab4:

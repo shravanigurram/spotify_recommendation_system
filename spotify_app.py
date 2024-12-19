@@ -154,7 +154,7 @@ st.markdown(
 )
 
 # Tab structure for different functionalities
-tab1, tab2, tab3 = st.tabs(["Track-based", "Artist-based", "Genre-based", "Genre & Artist-based"])
+tab1, tab2, tab3, tab4= st.tabs(["Track-based", "Artist-based", "Genre-based", "Genre & Artist-based"])
 
 # Track-based Recommendations
 with tab1:

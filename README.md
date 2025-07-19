@@ -30,8 +30,7 @@ Install them with:
 
 pip install streamlit pandas numpy scikit-learn
     
-
-Visit the app in your browser at 'https://spotifymusicrecommendation.streamlit.app/'.
+👉 **[live app](https://spotifymusicrecommendation.streamlit.app/)**
 
 ## How It Works
 
